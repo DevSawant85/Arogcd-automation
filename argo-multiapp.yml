@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: demo-list
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: payment
+            repoURL: https://gitlab.company.com/payment/payment.git
+            path: manifests
+            project: prod
+
+          - app: order
+            repoURL: https://gitlab.company.com/order/order.git
+            path: manifests
+            project: prod
+
+          - app: inventory
+            repoURL: https://gitlab.company.com/inventory/inventory.git
+            path: manifests
+            project: prod
+
+  template:
+    metadata:
+      name: '{{app}}'
+    spec:
+      project: '{{project}}'
+      source:
+        repoURL: '{{repoURL}}'
+        targetRevision: main
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{app}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
